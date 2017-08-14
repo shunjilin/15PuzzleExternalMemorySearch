@@ -36,7 +36,7 @@ struct Tiles {
 
 	// Tiles constructs a new instance by reading
 	// the initial state from the given file which is
-	// expected to be in Wheeler's tiles instance
+	// expected to be in Korf's tiles instance
 	// format.
 	Tiles(FILE*);
 
