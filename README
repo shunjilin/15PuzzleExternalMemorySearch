@@ -1,0 +1,111 @@
+This is the source code used in ``Implementing Fast Heuristic Search
+Code,'' by Burns, Hatem, Leighton, and Ruml, in Proceedings of the Fifth
+Annual Symposium on Combinatorial Search (SoCS-12), 2012.
+
+The BibTeX is:
+
+@inproceedings{burns12implementing,
+	author = "Ethan Burns and Matthew Hatem and Michael J. Leighton
+		and Wheeler Ruml",
+	title = "Implementing Fast Heuristic Search Code",
+	booktitle = "Proceedings of the Fifth Symposium on Combinatorial
+		Search ({SoCS}-12)",
+	year = "2012",
+}
+
+The array2d/ subdirectory contains the most optimized versions of both
+IDA* and A*.
+
+Subdirectories:
+
+base/
+
+	This is the initial codebase containing the un-optimized
+	implementations of tiles, IDA* and A*.
+
+incrmd/
+
+	This is a clone of the initial base with modifications to
+	compute Manhattan distance incrementally.  This works
+	by pre-computing the change in the heuristic value for
+	each tile move, i.e., for each tile, for each source location
+	to each possible destination location.
+
+optab/
+
+	This is a clone of the incrmd directory with modifications
+	to pre-compute the applicable operators for each blank
+	tile position.  This is a technique that I learned about from
+	Korf's implementation; I don't think that it is well-known.
+
+closed/
+
+	This is a clone of the optab directory with modifications to the
+	A* algorithm to prevent duplicate nodes from entering
+	the open list.  This is actually slower than the base
+	implementation.  I suspect that it is because it has to do
+	more expensive hash operations.  This modification should
+	work better with a packed state representation where hash
+	operations are cheaper.
+
+inplace/
+
+	This is a clone of the optab directory that uses inplace
+	modification for IDA*.  A* remains unchanged.
+
+templates/
+
+	This is a clone of the inplace directory that uses templates
+	instead of virtual method calls.  This has two distinct
+	advantages: 1) methods can be inlined instead of called via
+	a virtual method table and 2) the search has direct access
+	to the types within the domain interface and so the domain
+	code does not need to perform any allocations.
+
+	With this change, A* uses the inplace interface for expansion
+	to avoid extra copies.  Using expand would copy each
+	generated node into the vector returned by expand and
+	from there into the A* search node record.  Instead, we
+	modify the parent in-place, copy it directly into the A* node
+	and then revert the change to the parent state.
+
+poolalloc/
+
+	This is a clone of the templates directory that uses memory
+	pools with A* instead of allocating.  The pools are used
+	in both the hash table and for A* nodes.  IDA* remains
+	the same in this branch.
+
+packed/
+
+	This is a clone of the poolalloc directory that uses packed
+	states in A*.  IDA* remains the same.
+
+intrusive/
+
+	This is a clone of the packed directory where the heap and
+	hash table are implementd as templates and the hash table
+	is intrusive, i.e., the A* Node structure must contain the fields
+	needed by the hash table.  This allows the hash table to avoid
+	any allocations as the nodes being inserted into it are already
+	alocated and contain the necessary fields.
+
+closedopt/
+
+	This is a clone of the intrusive directory that also includes the
+	closed-list optimization.  Nodes are added to open and closed
+	at the same time so duplicates never make their way on to
+	open.  This is still slower, presumably because the hash table
+	is not sufficiently fast.
+
+array1d/
+
+	This is a clone of the closedopt directory that uses a 1D array for
+	the open list in A* instead of a binary heap.  IDA* remains
+	unchanged.
+
+array2d/
+
+	This is a clone of the array1d directory that uses a 2D array for
+	the open list in A* for g-based tie-breaking.  IDA* remains
+	unchanged.
