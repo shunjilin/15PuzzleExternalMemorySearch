@@ -4,7 +4,17 @@
 #include "tiles.hpp"
 #include "idastar.hpp"
 #include "astar.hpp"
+#include "compress_astar.hpp"
+#include "external_astar.hpp"
+#include "astar_ddd.hpp"
+#include "utils/wall_timer.hpp"
 #include <cstring>
+
+using namespace astar_ddd;
+using namespace external_astar;
+using namespace compress;
+
+using namespace std;
 
 int main(int argc, const char *argv[]) {
 	try {
@@ -18,17 +28,27 @@ int main(int argc, const char *argv[]) {
 			search = new Idastar<Tiles>(tiles);
 		else if (strcmp(argv[1], "astar") == 0)
 			search = new Astar<Tiles>(tiles);
+                else if (strcmp(argv[1], "compress_astar") == 0)
+                        search = new CompressAstar<Tiles>(tiles);
+                else if (strcmp(argv[1], "external_astar") == 0)
+                        search = new ExternalAstar<Tiles>(tiles);
+                else if (strcmp(argv[1], "astar_ddd") == 0)
+                        search = new AstarDDD<Tiles>(tiles);
 		else
 			throw Fatal("Unknown algorithm: %s", argv[1]);
 	
 		Tiles::State init = tiles.initial();
 		dfheader(stdout);
 		dfpair(stdout, "initial heuristic", "%d", tiles.h(init));
+                utils::WallTimer timer = utils::WallTimer();
 		double wall0 = walltime(), cpu0 = cputime();
 	
 		std::vector<Tiles::State> path = search->search(init);
+                
+                timer.stop();
 	
 		double wtime = walltime() - wall0, ctime = cputime() - cpu0;
+                cout << "Wall Time: " << timer << "s" << endl;
 		dfpair(stdout, "total wall time", "%g", wtime);
 		dfpair(stdout, "total cpu time", "%g", ctime);
 		dfpair(stdout, "total nodes expanded", "%lu", search->expd);

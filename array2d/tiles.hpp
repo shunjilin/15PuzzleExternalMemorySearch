@@ -32,6 +32,22 @@ struct Tiles {
 		bool eq(const PackedState &h) const {
 			return word == h.word;
 		}
+
+                bool operator==(const PackedState &h) const {
+                    return word == h.word;
+                }
+
+                bool operator!=(const PackedState &h) const {
+                    return word != h.word;
+                }
+
+                bool operator<(const PackedState &h) const {
+                    return word < h.word;
+                }
+
+                bool operator>(const PackedState &h) const {
+                    return word > h.word;
+                }
 	};
 
 	// Tiles constructs a new instance by reading
