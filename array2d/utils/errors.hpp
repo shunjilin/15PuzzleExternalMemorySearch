@@ -14,5 +14,4 @@ public:
 
 struct OpenListEmpty {};
 
-
 #endif
