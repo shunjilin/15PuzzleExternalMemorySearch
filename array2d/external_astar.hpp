@@ -45,6 +45,7 @@ namespace external_astar {
                             path.push_back(parent_state);
                             n = parent;
                         }
+                        open.clear();
                         break;
                     }
                     this->expd++;

@@ -217,6 +217,7 @@ namespace astar_ddd {
         open_buckets.clear();
         next_buckets.clear();
         closed_buckets.clear();
+        recursive_bucket = nullptr;
         // remove empty directory, this fails if directory is not empty
         rmdir("open_list_buckets");
     }

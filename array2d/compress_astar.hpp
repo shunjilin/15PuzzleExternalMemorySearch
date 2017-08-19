@@ -49,6 +49,8 @@ namespace compress {
                         n = parent;
                     }
                     closed.print_statistics();
+                    open.clear();
+                    closed.clear();
                     break;
                 }
 

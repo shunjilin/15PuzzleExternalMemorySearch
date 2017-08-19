@@ -37,7 +37,7 @@ namespace compress {
 
         // for compress with partitioning
         unique_ptr<MappingTable> partition_table;
-        unsigned n_partitions = 100;
+        unsigned n_partitions = 97;
        
         PointerTable internal_closed;
         int external_closed_fd;

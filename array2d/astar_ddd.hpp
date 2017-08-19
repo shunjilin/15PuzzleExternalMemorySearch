@@ -44,6 +44,7 @@ public:
                         path.push_back(parent_state);
                         n = parent;
                     }
+                    open.clear();
                     break;
                 }
                 this->expd++;
