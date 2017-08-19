@@ -13,6 +13,7 @@
 #include <limits>
 #include <unordered_set>
 #include <sstream>
+#include <cmath>
 
 // for constructing directory
 #include <sys/types.h>
@@ -28,7 +29,7 @@ namespace astar_ddd {
     template<class Entry>
     class AstarDDDOpenList {
 
-        int n_buckets = 10; // tune outside?
+        int n_buckets = 7; // tune outside?
 
         bool reopen_closed;
         
@@ -105,6 +106,7 @@ namespace astar_ddd {
                 }
                 next_entry.read(*next_buckets[i]);
             }
+            if ((hash_table.size() * sizeof(Entry)) > pow(1024, 3)) throw IOException("hash table does not fit in memory");
             next_buckets[i].reset(nullptr);
             create_bucket(i, BucketType::next);
             next_buckets[i]->clear();
