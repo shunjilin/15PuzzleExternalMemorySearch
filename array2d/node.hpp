@@ -11,6 +11,10 @@ struct Node {
     typename D::PackedState parent_packed;
     typename D::PackedState packed;
 
+    Node() {}
+    
+    Node(typename D::PackedState packedState) : packed(packedState) {} // for hashing parent
+
     const typename D::PackedState &key() { return packed; }
 
     bool write(fstream& file) const {
@@ -60,6 +64,14 @@ struct Node {
             sizeof(packed) + sizeof(parent_packed);
     }
 
+    static int get_n_var() {
+        return D::PackedState::get_n_var();
+    }
+
+    static int get_n_val(int i) {
+        return D::PackedState::get_n_val(i);
+    }
+
     bool operator==(const Node& other) const {
         return this->packed == other.packed;
     }
@@ -70,6 +82,10 @@ struct Node {
 
     bool operator>(const Node& other) const {
         return this->packed > other.packed;
+    }
+
+    int operator[](int i) const {
+        return this->packed[i];
     }
 };
 

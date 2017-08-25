@@ -4,7 +4,7 @@
 #include "../utils/memory.hpp"
 #include "../utils/named_fstream.hpp"
 #include "../utils/errors.hpp"
-#include "../utils/entryhash.hpp"
+#include "../hash_functions/tabulation_hash.hpp"
 
 #include <utility>
 #include <vector>
@@ -47,6 +47,9 @@ namespace astar_ddd {
 
         void create_bucket(int bucket_index, BucketType bucket_type);
         string get_bucket_string(int bucket_index, BucketType bucket_type) const;
+
+        TabulationHash<Entry> bucket_hasher;
+        TabulationHash<Entry> dd_hasher; // duplicate detection
         
     public:
         AstarDDDOpenList(bool reopen_closed);
@@ -87,7 +90,7 @@ namespace astar_ddd {
         //cout << "removing duplicates" << endl;
         for (int i = 0; i < n_buckets; ++i) { // for each bucket
 
-            unordered_set<Entry, EntryHash<Entry> > hash_table;
+            unordered_set<Entry, decltype(dd_hasher) > hash_table;
 
             // hash next list entries
             next_buckets[i]->clear();
@@ -155,7 +158,7 @@ namespace astar_ddd {
             return;
         }
         
-        int bucket_index = entry.packed.hash() % n_buckets;
+        int bucket_index = bucket_hasher(entry) % n_buckets;
     
         if (first_insert) {
             min_f = entry.f;
@@ -180,7 +183,7 @@ namespace astar_ddd {
             recursive_bucket->seekg(-Entry::get_size_in_bytes(), ios::cur);
             min_entry.read(*recursive_bucket);
             recursive_bucket->seekg(-Entry::get_size_in_bytes(), ios::cur);
-            min_entry.write(*closed_buckets[min_entry.packed.hash() % n_buckets]);
+            min_entry.write(*closed_buckets[bucket_hasher(min_entry) % n_buckets]);
             return min_entry;
         }
     
@@ -269,7 +272,7 @@ namespace astar_ddd {
         // For zero cost actions, buckets with g and g-1 both have to be checked
         
         // check parent hash bucket only
-        int bucket_index = entry.parent_packed.hash() % n_buckets;
+        int bucket_index = bucket_hasher(entry.parent_packed) % n_buckets;
         closed_buckets[bucket_index]->clear();
         closed_buckets[bucket_index]->seekg(0, ios::beg);
 

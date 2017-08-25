@@ -6,7 +6,7 @@
 #include "../utils/named_fstream.hpp"
 #include "../utils/memory.hpp"
 #include "../utils/errors.hpp"
-#include "../utils/entryhash.hpp"
+#include "../hash_functions/tabulation_hash.hpp"
 
 #include <iostream>
 #include <vector>
@@ -32,12 +32,14 @@ namespace compress {
         bool enable_partitioning;
         bool double_hashing;
 
+         TabulationHash<Entry> hasher;
+         TabulationHash<Entry> partition_hasher;
 
-        vector<unordered_set<Entry, EntryHash<Entry> > > buffers;
+        vector<unordered_set<Entry, decltype(hasher) > > buffers;
 
         // for compress with partitioning
         unique_ptr<MappingTable> partition_table;
-        unsigned n_partitions = 97;
+        unsigned n_partitions = 100;
        
         PointerTable internal_closed;
         int external_closed_fd;
@@ -82,7 +84,13 @@ namespace compress {
         void clear();
         void print_statistics() const;
     };
+    /*
+    template<class Entry>
+    TabulationHash<Entry> CompressClosedList<Entry>::hasher;
 
+    template<class Entry>
+    TabulationHash<Entry> CompressClosedList<Entry>::partition_hasher;
+    */
     template<class Entry>
     CompressClosedList<Entry>::CompressClosedList(bool reopen_closed,
                                                   bool enable_partitioning,
@@ -178,7 +186,7 @@ namespace compress {
         }
         
         // Then look in hash tables
-        auto hash_value = entry.packed.hash();
+        auto hash_value = hasher(entry);
         auto probe_value = get_probe_value(hash_value);
         auto ptr = internal_closed.hash_find(hash_value, probe_value);
         while (!internal_closed.ptr_is_invalid(ptr)) {
@@ -214,14 +222,14 @@ namespace compress {
 
     template<class Entry>
     unsigned CompressClosedList<Entry>::get_partition_value(const Entry& entry) const {
-        return entry.packed.hash() % n_partitions;
+        return partition_hasher(entry) % n_partitions;
     }
 
     template<class Entry>
     void CompressClosedList<Entry>::flush_buffer(size_t partition_value) {
         for (auto& node : buffers[partition_value]) {
             write_external_at(node, external_closed_index);
-            auto hash_value = node.packed.hash();
+            auto hash_value = hasher(node);
             internal_closed.hash_insert(external_closed_index,
                                         hash_value,
                                         get_probe_value(hash_value));
@@ -230,7 +238,7 @@ namespace compress {
         }
         if (enable_partitioning)
             partition_table->insert_map_value(partition_value);
-        unordered_set<Entry, EntryHash<Entry> >().swap(buffers[partition_value]); // release memory
+        unordered_set<Entry, decltype(hasher) >().swap(buffers[partition_value]); // release memory
     }
     
     
@@ -247,7 +255,7 @@ namespace compress {
             }
         }
         // Then look in hash tables
-        auto parent_hash_value = entry.parent_packed.hash();
+        auto parent_hash_value = hasher(entry.parent_packed);
         auto probe_value = get_probe_value(parent_hash_value);
         auto ptr = internal_closed.hash_find(parent_hash_value, probe_value);
         while (!internal_closed.ptr_is_invalid(ptr)) {

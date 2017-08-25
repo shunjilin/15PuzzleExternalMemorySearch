@@ -6,6 +6,7 @@
 #include "hashtbl.hpp"
 #include "heap.hpp"
 #include "pool.hpp"
+#include <iostream>
 
 template<class D> class Astar : public SearchAlg<D> {
 
@@ -51,6 +52,8 @@ public:
 			this->dom.unpack(state, n->packed);
 
 			if (this->dom.isgoal(state)) {
+                            std::cout << "Entries in closed list: "
+                                      << closed.get_n_entries() << std::endl;
 				for (Node *p = n; p; p = p->parent) {
 					typename D::State s;
 					this->dom.unpack(s, p->packed);

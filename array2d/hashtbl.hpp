@@ -6,6 +6,7 @@
 
 #include <vector>
 #include "pool.hpp"
+#include <cstddef>
 
 template <class Node> struct HashEntry {
 	unsigned long hash;
@@ -16,6 +17,7 @@ template <class Node> struct HashEntry {
 template <class Key, class Node> class HashTable {
 
 	std::vector<Node*> buckets;
+    std::size_t n_entries;
 
 public:
 
@@ -40,7 +42,12 @@ public:
 		n->hashentry().hash = hash;
 		n->hashentry().next = buckets[ind];
 		buckets[ind] = n;
+                ++n_entries;
 	}
+
+    std::size_t get_n_entries() const {
+        return n_entries;
+    }
 
 };
 
