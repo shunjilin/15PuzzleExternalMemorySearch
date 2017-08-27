@@ -50,6 +50,9 @@ namespace astar_ddd {
 
         TabulationHash<Entry> bucket_hasher;
         TabulationHash<Entry> dd_hasher; // duplicate detection
+
+        // for temp logging
+        size_t max_bucket_size_in_bytes = 0;
         
     public:
         AstarDDDOpenList(bool reopen_closed);
@@ -109,7 +112,10 @@ namespace astar_ddd {
                 }
                 next_entry.read(*next_buckets[i]);
             }
-            if ((hash_table.size() * sizeof(Entry)) > pow(1024, 3)) throw IOException("hash table does not fit in memory");
+            //if ((hash_table.size() * sizeof(Entry)) > pow(1024, 3)) throw IOException("hash table does not fit in memory");
+            size_t bucket_size_in_bytes = hash_table.size() * sizeof(Entry);
+            if (bucket_size_in_bytes > max_bucket_size_in_bytes)
+                max_bucket_size_in_bytes = bucket_size_in_bytes; 
             next_buckets[i].reset(nullptr);
             create_bucket(i, BucketType::next);
             next_buckets[i]->clear();
@@ -225,6 +231,7 @@ namespace astar_ddd {
         recursive_bucket = nullptr;
         // remove empty directory, this fails if directory is not empty
         rmdir("open_list_buckets");
+        cout << "max bucket size in bytes is : " << max_bucket_size_in_bytes << endl;
     }
 
     template<class Entry>
