@@ -29,7 +29,7 @@ namespace astar_ddd {
     template<class Entry>
     class AstarDDDOpenList {
 
-        int n_buckets = 7; // tune outside?
+        int n_buckets = 10; // tune outside?
 
         bool reopen_closed;
         
