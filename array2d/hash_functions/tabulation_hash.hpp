@@ -1,7 +1,7 @@
 #ifndef TABULATION_HASH_H
 #define TABULATION_HASH_H
 
-#define TWISTED // optimization for twisted tabulation
+//#define TWISTED // optimization for twisted tabulation
 
 #include "../utils/memory.hpp"
 
