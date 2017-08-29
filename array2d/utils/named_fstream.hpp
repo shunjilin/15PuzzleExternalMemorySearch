@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <vector>
 
-constexpr int BUFFER_SIZE = 4096 * 2; // test different buffer sizes
+constexpr int BUFFER_SIZE = 16384; //16kb
 /*                                                                           \
 | Keeps file_names with their respective fstream for convenient destruction. |
 | Also provides custom size buffer.                                          |
