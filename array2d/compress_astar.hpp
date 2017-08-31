@@ -21,7 +21,7 @@ namespace compress {
 
     public:
         CompressAstar(D &d) : SearchAlg<D>(d),
-            closed(true, true, true, 0.75 * pow(1024, 3)),
+            closed(true, true, true, 0.95 * pow(1024, 3)),
             open() { }
 
         std::vector<typename D::State> search(typename D::State &init) {

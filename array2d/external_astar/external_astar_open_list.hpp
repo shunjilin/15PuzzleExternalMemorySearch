@@ -26,6 +26,8 @@
 #include <unistd.h>
 using namespace std;
 
+const size_t MERGE_CHUNK_BYTES = 996147200; // 950MB
+
 // This only works on unit cost domains! Otherwise behavior is undefined.
 
 namespace external_astar {
@@ -74,7 +76,7 @@ namespace external_astar {
         vector<streampos> k_offsets; // keeps track of divisions in merge file
 
         // Allocate ~500mb for one block
-        size_t block_entries = pow(2,32) / (8 * Entry::get_size_in_bytes()); // round down
+        size_t block_entries = MERGE_CHUNK_BYTES / Entry::get_size_in_bytes(); // round down
         vector<Entry> block;
         block.reserve(block_entries);
         
@@ -107,7 +109,7 @@ namespace external_astar {
         target_stream = nullptr;
         
         // Merge step
-        size_t buffer_entries = 4096 / Entry::get_size_in_bytes();
+        size_t buffer_entries = BUFFER_BYTES / Entry::get_size_in_bytes();
         auto k_value = k_offsets.size();
         vector< deque<Entry> > merge_buffers(k_value);
 
