@@ -59,11 +59,9 @@ namespace compress {
         void write_external_at(const Entry& entry, size_t index);
 
         // probe statistics, does not include probes for path reconstruction
-        // Good probes: successful probes into buffer or external closed list
+        // Good probes: successful probes into external closed list
         // Bad probes: unsuccessful probes into external closed list
-        // Note: The inclusion of buffer hits is because there is no
-        // straightforward way of distinguishing memory access from disc access,
-        // as the os is in charge of caching and paging in and out
+        mutable size_t buffer_hits = 0;
         mutable size_t good_probes = 0;
         mutable size_t bad_probes = 0;
 
@@ -174,7 +172,7 @@ namespace compress {
         
         auto buffer_it = buffer.find(entry);
         if (buffer_it != buffer.end()) {
-            ++good_probes;
+            ++buffer_hits;
             if (reopen_closed) {
                 if (entry.g < buffer_it->g) {
                     buffer.erase(buffer_it);
@@ -308,9 +306,9 @@ namespace compress {
              << internal_closed.get_n_entries() << "\n";
         cout << "Load factor of the closed list at the end of search : "
              << internal_closed.get_load_factor() << "\n";
-        cout << "Successful probes into the closed list (includes buffer hits): " << good_probes
-             << "\nUnsuccessful probes into the closed list: "
-             << bad_probes;
+        cout << "Successful probes into the closed list: " << good_probes
+             << "\nUnsuccessful probes into the closed list: " << bad_probes
+             << "\nBuffer hits: " << buffer_hits;
         if (enable_partitioning) {
             cout << "\nPartition table entries: " << partition_table->size() << "\n";
             cout << "Partition table size: " << partition_table->get_size_in_bytes()
