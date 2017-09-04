@@ -84,13 +84,14 @@ namespace astar_ddd {
             create_bucket(i, BucketType::next);
             create_bucket(i, BucketType::closed);
         }
+        cout << "Number of hash buckets: " << n_buckets << endl;
     }
 
     template<class Entry>
     void AstarDDDOpenList<Entry>::
     remove_duplicates() {
         min_f = numeric_limits<int>::max();
-        //cout << "removing duplicates" << endl;
+        
         for (int i = 0; i < n_buckets; ++i) { // for each bucket
 
             unordered_set<Entry, decltype(dd_hasher) > hash_table;
@@ -112,7 +113,7 @@ namespace astar_ddd {
                 }
                 next_entry.read(*next_buckets[i]);
             }
-            //if ((hash_table.size() * sizeof(Entry)) > pow(1024, 3)) throw IOException("hash table does not fit in memory");
+            
             size_t bucket_size_in_bytes = hash_table.size() * sizeof(Entry);
             if (bucket_size_in_bytes > max_bucket_size_in_bytes)
                 max_bucket_size_in_bytes = bucket_size_in_bytes; 
