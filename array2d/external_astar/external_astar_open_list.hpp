@@ -76,7 +76,7 @@ namespace external_astar {
         vector<streampos> k_offsets; // keeps track of divisions in merge file
 
         // Allocate ~500mb for one block
-        size_t block_entries = MERGE_CHUNK_BYTES / Entry::get_size_in_bytes(); // round down
+        size_t block_entries = MERGE_CHUNK_BYTES / sizeof(Entry); // round down
         vector<Entry> block;
         block.reserve(block_entries);
         
