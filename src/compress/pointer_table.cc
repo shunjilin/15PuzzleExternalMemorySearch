@@ -67,10 +67,10 @@ PointerTable::PointerTable(size_t ptr_table_size_in_bytes)
 
     // For logging purposes.
     // Due to primality tests, initialization may take some time.
-    cout << "Time taken to initialize pointer table is: " << timer << "\n"
+    cout << "Time taken to initialize pointer table: " << timer << "\n"
          << "Size of pointer in pointer table: " << get_ptr_size_in_bits() << " bits\n"
-         << "Size of pointer table is: " << get_max_size_in_bytes() << " bytes\n"
-         << "Max entries of pointer table is: " << get_max_entries() << endl;
+         << "Size of pointer table: " << get_max_size_in_bytes() << " bytes\n"
+         << "Max entries of pointer table: " << get_max_entries() << endl;
 }
 
 // Get the size of a pointer (in bits)  given the size of

@@ -84,7 +84,7 @@ namespace astar_ddd {
             create_bucket(i, BucketType::next);
             create_bucket(i, BucketType::closed);
         }
-        cout << "Number of hash buckets: " << n_buckets << endl;
+        dfpair(stdout, "number of hash buckets", "%d", n_buckets);
     }
 
     template<class Entry>
@@ -232,7 +232,7 @@ namespace astar_ddd {
         recursive_bucket = nullptr;
         // remove empty directory, this fails if directory is not empty
         rmdir("open_list_buckets");
-        cout << "max bucket size in bytes is : " << max_bucket_size_in_bytes << endl;
+        dfpair(stdout, "max bucket size (bytes)", "%lu", max_bucket_size_in_bytes);
     }
 
     template<class Entry>

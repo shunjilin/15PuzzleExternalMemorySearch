@@ -116,7 +116,7 @@ namespace compress {
         // initialize external closed list
         external_closed_bytes =
             internal_closed.get_max_entries() * Entry::get_size_in_bytes();
-        cout << "external closed bytes " << external_closed_bytes << endl;
+        dfpair(stdout, "external closed (bytes)", "%lu", external_closed_bytes);
 
         // initialize external closed list
         external_closed_fd = open("closed_list.bucket", O_CREAT | O_TRUNC | O_RDWR,
@@ -136,18 +136,16 @@ namespace compress {
 
         if (madvise(external_closed, external_closed_bytes, MADV_RANDOM) < 0)
             throw IOException("Fail to give madvise for closed list file");
-        // For logging purposes.
-        cout << "Using compress closed list ";
+        // For logging purposes
         if (enable_partitioning)
-            cout << "with " << n_partitions << " partitions ";
+            dfpair(stdout, "number of partitions", "%u", n_partitions);
         if (double_hashing) {
-            cout << "with double hashing\n";
+            dfpair(stdout, "probe strategy", "%s", "double hashing");
         } else {
-            cout << "with linear probing\n";
+            dfpair(stdout, "probe strategy", "%s", "linear probing");
         }
-        cout << "Maximum capacity (entries) of closed list: "
-             << internal_closed.get_max_entries()
-             << endl;
+        dfpair(stdout, "max capacity of closed list (nodes)", "%lu",
+               internal_closed.get_max_entries());
     }
 
     template<class Entry>
@@ -301,20 +299,23 @@ namespace compress {
 
     template<class Entry>
     void CompressClosedList<Entry>::print_statistics() const {
-        cout << "Size of a node: " << Entry::get_size_in_bytes() << " bytes\n";
-        cout << "Number of entries in the closed list at the end of search : "
-             << internal_closed.get_n_entries() << "\n";
-        cout << "Load factor of the closed list at the end of search : "
-             << internal_closed.get_load_factor() << "\n";
-        cout << "Successful probes into the closed list: " << good_probes
-             << "\nUnsuccessful probes into the closed list: " << bad_probes
-             << "\nBuffer hits: " << buffer_hits;
+        dfpair(stdout, "size of node (bytes)", "%lu", Entry::get_size_in_bytes());
+        dfpair(stdout, "nodes in closed list",
+               "%lu", internal_closed.get_n_entries());
+        cout << "#pair  \"load factor\"   "
+             << "\"" << internal_closed.get_load_factor() << "\"" << endl; 
+        dfpair(stdout, "successful probes",
+               "%lu", good_probes);
+        dfpair(stdout, "usuccessful probes",
+               "%lu", bad_probes);
+        dfpair(stdout, "buffer hits",
+               "%lu", buffer_hits);
         if (enable_partitioning) {
-            cout << "\nPartition table entries: " << partition_table->size() << "\n";
-            cout << "Partition table size: " << partition_table->get_size_in_bytes()
-                 << " bytes";
+            dfpair(stdout, "mapping table entries", "%lu",
+                   partition_table->size());
+            dfpair(stdout, "mapping table size (bytes)", "%lu",
+                   partition_table->get_size_in_bytes());
         }
-        cout << endl;
     }
 }
 

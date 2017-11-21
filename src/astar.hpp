@@ -53,7 +53,7 @@ public:
 
 			if (this->dom.isgoal(state)) {
                             dfpair(stdout, "Entries in closed list",
-                                   "%g", closed.get_n_entries());
+                                   "%lu", closed.get_n_entries());
 				for (Node *p = n; p; p = p->parent) {
 					typename D::State s;
 					this->dom.unpack(s, p->packed);

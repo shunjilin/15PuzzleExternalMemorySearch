@@ -37,7 +37,7 @@ int main(int argc, const char *argv[]) {
 		else
 			throw Fatal("Unknown algorithm: %s", argv[1]);
 
-                dfpair(stdout, "search algorithm", "%g", argv[1]);
+                dfpair(stdout, "search algorithm", "%s", argv[1]);
 	
 		Tiles::State init = tiles.initial();
 		dfheader(stdout);
@@ -48,7 +48,9 @@ int main(int argc, const char *argv[]) {
                 
                 timer.stop();
                 
-                dfpair(stdout, "search wall time (s)", "%g", timer);
+                cout << "#pair  \"search wall time (s)\"   "
+                     << "\"" << timer << "\"" << endl;
+                
 		dfpair(stdout, "total nodes expanded", "%lu", search->expd);
 		dfpair(stdout, "total nodes generated", "%lu", search->gend);
 		dfpair(stdout, "solution length", "%u", (unsigned int) path.size());
@@ -58,6 +60,5 @@ int main(int argc, const char *argv[]) {
 		fputc('\n', stderr);
 		return 1;
 	}
-
 	return 0;
 }

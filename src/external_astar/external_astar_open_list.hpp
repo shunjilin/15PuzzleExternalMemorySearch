@@ -59,6 +59,7 @@ namespace external_astar {
     {
         // create directory for open list files if not exist
         mkdir("open_list_buckets", 0744);
+        dfpair(stdout, "merge chunk (bytes)", "%lu", MERGE_CHUNK_BYTES);
     }
 
     template<class Entry>
