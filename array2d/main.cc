@@ -36,21 +36,19 @@ int main(int argc, const char *argv[]) {
                         search = new AstarDDD<Tiles>(tiles);
 		else
 			throw Fatal("Unknown algorithm: %s", argv[1]);
+
+                dfpair(stdout, "search algorithm", "%g", argv[1]);
 	
 		Tiles::State init = tiles.initial();
 		dfheader(stdout);
 		dfpair(stdout, "initial heuristic", "%d", tiles.h(init));
                 utils::WallTimer timer = utils::WallTimer();
-		double wall0 = walltime(), cpu0 = cputime();
 	
 		std::vector<Tiles::State> path = search->search(init);
                 
                 timer.stop();
-	
-		double wtime = walltime() - wall0, ctime = cputime() - cpu0;
-                cout << "Wall Time: " << timer << "s" << endl;
-		dfpair(stdout, "total wall time", "%g", wtime);
-		dfpair(stdout, "total cpu time", "%g", ctime);
+                
+                dfpair(stdout, "search wall time (s)", "%g", timer);
 		dfpair(stdout, "total nodes expanded", "%lu", search->expd);
 		dfpair(stdout, "total nodes generated", "%lu", search->gend);
 		dfpair(stdout, "solution length", "%u", (unsigned int) path.size());

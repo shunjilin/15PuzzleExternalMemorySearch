@@ -52,8 +52,8 @@ public:
 			this->dom.unpack(state, n->packed);
 
 			if (this->dom.isgoal(state)) {
-                            std::cout << "Entries in closed list: "
-                                      << closed.get_n_entries() << std::endl;
+                            dfpair(stdout, "Entries in closed list",
+                                   "%g", closed.get_n_entries());
 				for (Node *p = n; p; p = p->parent) {
 					typename D::State s;
 					this->dom.unpack(s, p->packed);
