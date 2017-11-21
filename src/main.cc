@@ -28,7 +28,7 @@ int main(int argc, const char *argv[]) {
 			search = new Idastar<Tiles>(tiles);
 		else if (strcmp(argv[1], "astar") == 0)
 			search = new Astar<Tiles>(tiles);
-                else if (strcmp(argv[1], "compress_astar") == 0)
+                else if (strcmp(argv[1], "astar_idd") == 0)
                         search = new CompressAstar<Tiles>(tiles);
                 else if (strcmp(argv[1], "external_astar") == 0)
                         search = new ExternalAstar<Tiles>(tiles);
