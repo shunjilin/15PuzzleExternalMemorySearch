@@ -1,4 +1,5 @@
 // Copyright 2012 Ethan Burns. All rights reserved.
+// Modified, Copyright 2017 Shunji Lin. All rights reserved.
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
 #ifndef _HASHTBL_HPP_

@@ -1,3 +1,6 @@
+// Copyright 2017 Shunji Lin. All rights reserved.
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
 #ifndef ASTAR_DDD_OPEN_LIST_HPP
 #define ASTAR_DDD_OPEN_LIST_HPP
 
