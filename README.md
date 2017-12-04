@@ -10,7 +10,8 @@ Includes A*-IDD, which implements immediate duplicate detection via open
 address hashing (instead of delayed duplicate detection), for use with solid
 states drives as secondary memory.
 
-This source code is built upon the 15 Puzzle solver by Ethan Burns, as used in
+This source code is built upon the [15 Puzzle solver by Ethan
+Burns](http://www.cs.unh.edu/~eaburns/socs12/), as used in
 ``Implementing Fast Heuristic Search Code,'' by Burns, Hatem, Leighton, and
 Ruml, in Proceedings of the Fifth Annual Symposium on Combinatorial Search
 (SoCS-12), 2012.
