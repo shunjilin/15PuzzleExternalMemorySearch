@@ -67,8 +67,10 @@ Alternatively, run on Korf's instances, e.g.:
 ```
 
 ## Disclaimer
-This has only been tested on a linux system. Furthermore, the use of mmap in
-A*-IDD requires a POSIX-compliant operating system.
+This has only been tested on a linux system.  
+Furthermore, the use of mmap in A*-IDD requires a POSIX-compliant operating
+system.
+Requires boost/multiprecision/miller_rabin for primality testing in A*-IDD.
 
 ## References
 + Burns, E. A.; Hatem, M.; Leighton, M. J.; and Ruml, W. 2012. Implementing
