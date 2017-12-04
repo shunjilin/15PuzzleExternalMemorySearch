@@ -55,10 +55,10 @@ To run:
 <intial positions>  
 ```
 Where  
-<search algorithm>=[astar, idastar, astar\_idd, astar\_ddd,
+search algorithm = [astar, idastar, astar\_idd, astar\_ddd,
 external\_astar]   
-<width height>= 4 4  
-<initial positions>= 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+width height = 4 4  
+initial positions = 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
 
 Alternatively, run on Korf's instances, e.g.:
 ```
@@ -70,8 +70,8 @@ This has only been tested on a linux system. Furthermore, the use of mmap in
 A*-IDD requires a POSIX-compliant operating system.
 
 ## References
-+ Burns, E. A.; Hatem, M.; Leighton, M. J.; and Ruml, W.
-2012. Implementing fast heuristic search code. In Fifth Annual Symposium on
++ Burns, E. A.; Hatem, M.; Leighton, M. J.; and Ruml, W. 2012. Implementing
+fast heuristic search code. In Fifth Annual Symposium on
 Combinatorial Search.
 + Edelkamp, S.; Jabbar, S.; and Schrödl, S. 2004. External A*. KI 4:226–240.
 + Hatem, M. 2014. Heuristic search with limited memory. Ph.D. Dissertation,
