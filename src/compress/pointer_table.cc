@@ -30,7 +30,7 @@ PointerTable::PointerTable(size_t ptr_table_size_limit_in_bytes)
     utils::WallTimer timer;
     size_t big_ptr_size_in_bits = get_ptr_size_in_bits(ptr_table_size_limit_in_bytes);
     
-    // need to check if size is optimal
+    // choose pointer that gives max table size in entries
     size_t small_ptr_size_in_bits =
         big_ptr_size_in_bits > 0 ? big_ptr_size_in_bits - 1 : 0;
     
@@ -75,6 +75,8 @@ PointerTable::PointerTable(size_t ptr_table_size_limit_in_bytes)
          << "Max entries of pointer table: " << get_max_entries() << endl;
 }
 
+// Returns the biggest pointer size, may not be optimal in terms of size of
+// pointer table.
 size_t PointerTable::get_ptr_size_in_bits(size_t ptr_table_size_limit_in_bytes) const {
     size_t ptr_size_in_bits = 0;
     auto max_ptr_bits = size_t_bits;
