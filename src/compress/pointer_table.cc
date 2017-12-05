@@ -2,7 +2,6 @@
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
 #include "pointer_table.hpp"
-
 #include <vector>
 #include <utility>
 #include <cstddef>
@@ -26,16 +25,16 @@ constexpr size_t size_t_bits = sizeof(size_t) * CHAR_BIT;
 // Note: bools in vectors take up 1 bit each
 // (max_entries * ptr_bits) == bits.size()
 
-PointerTable::PointerTable(size_t ptr_table_size_in_bytes)
+PointerTable::PointerTable(size_t ptr_table_size_limit_in_bytes)
 {
     utils::WallTimer timer;
-    size_t big_ptr_size_in_bits = get_ptr_size_in_bits(ptr_table_size_in_bytes);
+    size_t big_ptr_size_in_bits = get_ptr_size_in_bits(ptr_table_size_limit_in_bytes);
     
     // need to check if size is optimal
     size_t small_ptr_size_in_bits =
         big_ptr_size_in_bits > 0 ? big_ptr_size_in_bits - 1 : 0;
     
-    size_t big_ptr_entries = ptr_table_size_in_bytes * 8 / big_ptr_size_in_bits;
+    size_t big_ptr_entries = ptr_table_size_limit_in_bytes * 8 / big_ptr_size_in_bits;
     size_t small_ptr_entries = pow(2, small_ptr_size_in_bits);
     
 #ifdef PRIME
