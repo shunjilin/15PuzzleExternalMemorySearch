@@ -72,19 +72,15 @@ namespace compress {
             // tiebreak by highest g value
             for (auto g_bucket = f_bucket->second.rbegin();
                  g_bucket != f_bucket->second.rend(); ++g_bucket) {
-                //reverse seek
+                // FIFO 
                 g_bucket->second.seekp(-Entry::get_size_in_bytes(), ios::cur);
-                
                 min_entry.read(g_bucket->second);
-
-                // reurn pointer for subsequent write / read
                 g_bucket->second.seekp(-Entry::get_size_in_bytes(), ios::cur);
 
-                // if g bucket is empty
+                // remove files if empty
                 if (g_bucket->second.tellp() == 0) {
                     auto g = g_bucket->first;
                     f_bucket->second.erase(g);
-                    // if f bucket is empty
                     if (f_bucket->second.empty()) {
                         auto f = f_bucket->first;
                         fg_buckets.erase(f);
@@ -106,7 +102,6 @@ namespace compress {
     void CompressOpenList<Entry>::clear() {
         fg_buckets.clear();
         size = 0;
-        // remove empty directory, this fails if directory is not empty
         rmdir("open_list_buckets");
     }
     

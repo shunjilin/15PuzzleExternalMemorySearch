@@ -48,7 +48,7 @@ namespace compress {
         int external_closed_fd;
         char *external_closed;
         size_t external_closed_index = 0;
-        size_t external_closed_bytes = 0; // total size in nodes of external table
+        size_t external_closed_bytes = 0;
 
         size_t max_buffer_size_in_bytes = BUFFER_BYTES;
         size_t max_buffer_entries;
@@ -62,8 +62,6 @@ namespace compress {
         void write_external_at(const Entry& entry, size_t index);
 
         // probe statistics, does not include probes for path reconstruction
-        // Good probes: successful probes into external closed list
-        // Bad probes: unsuccessful probes into external closed list
         mutable size_t buffer_hits = 0;
         mutable size_t good_probes = 0;
         mutable size_t bad_probes = 0;
@@ -85,13 +83,7 @@ namespace compress {
         void clear();
         void print_statistics() const;
     };
-    /*
-    template<class Entry>
-    TabulationHash<Entry> CompressClosedList<Entry>::hasher;
-
-    template<class Entry>
-    TabulationHash<Entry> CompressClosedList<Entry>::partition_hasher;
-    */
+    
     template<class Entry>
     CompressClosedList<Entry>::CompressClosedList(bool reopen_closed,
                                                   bool enable_partitioning,
@@ -102,8 +94,6 @@ namespace compress {
           double_hashing(double_hashing),
           internal_closed(internal_closed_bytes) 
     {
-
-        // set max buffer entries
         max_buffer_entries = max_buffer_size_in_bytes / Entry::get_size_in_bytes();
         
         // initialize partition table
@@ -121,7 +111,6 @@ namespace compress {
             internal_closed.get_max_entries() * Entry::get_size_in_bytes();
         dfpair(stdout, "external closed (bytes)", "%lu", external_closed_bytes);
 
-        // initialize external closed list
         external_closed_fd = open("closed_list.bucket", O_CREAT | O_TRUNC | O_RDWR,
                                   S_IRUSR | S_IWUSR);
         if (external_closed_fd < 0)
@@ -139,7 +128,8 @@ namespace compress {
 
         if (madvise(external_closed, external_closed_bytes, MADV_RANDOM) < 0)
             throw IOException("Fail to give madvise for closed list file");
-        // For logging purposes
+
+        // Logging
         if (enable_partitioning)
             dfpair(stdout, "number of partitions", "%u", n_partitions);
         if (double_hashing) {
@@ -187,7 +177,7 @@ namespace compress {
         // Then look in hash tables
         auto hash_value = hasher(entry);
         auto probe_value = get_probe_value(hash_value);
-        auto ptr = internal_closed.hash_find(hash_value, probe_value);
+        auto ptr = internal_closed.get_ptr_with_hash(hash_value, probe_value);
         while (!internal_closed.ptr_is_invalid(ptr)) {
 
             // first check in partition table
@@ -209,8 +199,8 @@ namespace compress {
                 ++bad_probes;
             }
             // update pointer and resume while loop if partition values do not
-            // match or if hash collision
-            ptr = internal_closed.hash_find(hash_value, probe_value, false);
+            // match or if false positive probe
+            ptr = internal_closed.get_ptr_with_hash(hash_value, probe_value, false);
         }
         buffers[partition_value].insert(entry);
         if (buffers[partition_value].size() == max_buffer_entries)
@@ -229,7 +219,7 @@ namespace compress {
         for (auto& node : buffers[partition_value]) {
             write_external_at(node, external_closed_index);
             auto hash_value = hasher(node);
-            internal_closed.hash_insert(external_closed_index,
+            internal_closed.insert_ptr_with_hash(external_closed_index,
                                         hash_value,
                                         get_probe_value(hash_value));
             
@@ -237,7 +227,8 @@ namespace compress {
         }
         if (enable_partitioning)
             partition_table->insert_map_value(partition_value);
-        unordered_set<Entry, decltype(hasher) >().swap(buffers[partition_value]); // release memory
+        // release memory
+        unordered_set<Entry, decltype(hasher) >().swap(buffers[partition_value]);
     }
     
     
@@ -256,7 +247,7 @@ namespace compress {
         // Then look in hash tables
         auto parent_hash_value = hasher(entry.parent_packed);
         auto probe_value = get_probe_value(parent_hash_value);
-        auto ptr = internal_closed.hash_find(parent_hash_value, probe_value);
+        auto ptr = internal_closed.get_ptr_with_hash(parent_hash_value, probe_value);
         while (!internal_closed.ptr_is_invalid(ptr)) {
             // read node from pointer
             Entry node;
@@ -265,16 +256,14 @@ namespace compress {
                 return node;
             }
             // update pointer and resume while loop if partition values do not
-            // match or if hash collision
-            ptr = internal_closed.hash_find(parent_hash_value,
+            // match or if false positive probe
+            ptr = internal_closed.get_ptr_with_hash(parent_hash_value,
                                             probe_value,
                                             false);
         }
         return Entry();
     }
 
-
-    // read helper function to encapsulate pointer manipulation
     template<class Entry>
     void CompressClosedList<Entry>::
     read_external_at(Entry& entry, size_t index) const {
@@ -282,7 +271,6 @@ namespace compress {
                    (external_closed + index * Entry::get_size_in_bytes()));
     }
 
-    // write helper function to encapsulate pointer manipulation
     template<class Entry>
     void CompressClosedList<Entry>::
     write_external_at(const Entry& entry, size_t index) {

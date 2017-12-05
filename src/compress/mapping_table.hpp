@@ -18,7 +18,7 @@
 
 class MappingTable {
     std::vector<unsigned> table;
-    std::size_t nodes_per_map; // size of each mapping
+    std::size_t nodes_per_map;
 public:
     MappingTable(std::size_t nodes_per_map) :
         nodes_per_map(nodes_per_map) {}
