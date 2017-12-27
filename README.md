@@ -45,12 +45,15 @@ A*-IDD, A*-DDD and External A*
 ## Usage
 To compile:
 ```
-./makeall
+mkdir build
+cd build
+cmake ..
+make
 ```
 
 To run:
 ```
-./src/tiles <search algorithm>  
+./build/src/solver <search algorithm>  
 <width height>  
 <goal positions>  
 <intial positions>  
@@ -63,7 +66,7 @@ initial positions = 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
 
 Alternatively, run on Korf's instances, e.g.:
 ```
-./src/tiles astar_idd < Korf100/prob001
+./build/src/solver astar_idd < ./Korf100/prob001
 ```
 
 ## Disclaimer
