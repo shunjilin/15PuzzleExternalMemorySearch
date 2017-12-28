@@ -8,7 +8,9 @@
 
 #include "compress/compress_open_list.hpp"
 #include "compress/compress_closed_list.hpp"
+#include "utils/compunits.hpp" // TODO: move to user option
 
+using namespace compunits;
 using namespace std;
 
 namespace compress {
@@ -22,7 +24,7 @@ namespace compress {
 
     public:
         CompressAstar(D &d) : SearchAlg<D>(d),
-            closed(true, true, true, 0.95 * pow(1024, 3)),
+            closed(true, true, true, 950_MiB), // TODO: move to user option
             open() { }
 
         std::vector<typename D::State> search(typename D::State &init) {
