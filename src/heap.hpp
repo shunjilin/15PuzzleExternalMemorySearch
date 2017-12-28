@@ -73,7 +73,7 @@ public:
 	void push(HeapElm *n) {
 		int p0 = n->f;
  
-		assert (p0 < qs.size());
+		assert ((unsigned int) p0 < qs.size());
 
 		if (p0 < min)
 			min = p0;

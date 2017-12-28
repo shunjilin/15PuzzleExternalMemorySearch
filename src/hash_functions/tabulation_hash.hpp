@@ -81,7 +81,7 @@ TabulationHash<Entry>::TabulationHash()
     // resize table to match dimensions of variables and their  values
     table.resize(Entry::get_n_var());
     for (std::size_t i = 0; i < table.size(); ++i) {
-        table[i].resize(Entry::get_n_val(i));
+        table[i].resize(Entry::get_n_val());
     }
 
     // fill table with random bitstrings (64 bit)

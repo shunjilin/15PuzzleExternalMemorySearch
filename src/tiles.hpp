@@ -33,7 +33,7 @@ struct Tiles {
             return Ntiles;
         }
 
-        static size_t get_n_val(int index) {
+        static size_t get_n_val() {
             return Ntiles;
         }
         

@@ -72,8 +72,8 @@ struct Node {
         return D::PackedState::get_n_var();
     }
 
-    static int get_n_val(int i) {
-        return D::PackedState::get_n_val(i);
+    static int get_n_val() {
+        return D::PackedState::get_n_val();
     }
 
     bool operator==(const Node& other) const {
