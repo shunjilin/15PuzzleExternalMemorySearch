@@ -20,8 +20,6 @@ using namespace boost::multiprecision;
 
 constexpr size_t size_t_bits = sizeof(size_t) * CHAR_BIT;
 
-#define PRIME // perhaps set this as option parameter instead of macro
-
 // Note: bools in vectors take up 1 bit each
 // (max_entries * ptr_bits) == bits.size()
 
@@ -37,14 +35,13 @@ PointerTable::PointerTable(size_t ptr_table_size_limit_in_bytes)
     size_t big_ptr_entries = ptr_table_size_limit_in_bytes * 8 / big_ptr_size_in_bits;
     size_t small_ptr_entries = pow(2, small_ptr_size_in_bits);
     
-#ifdef PRIME
     for (; big_ptr_entries > 0; --big_ptr_entries) {
         if (miller_rabin_test(big_ptr_entries, 25)) break;
     }
     for (; small_ptr_entries > 0; --small_ptr_entries) {
         if (miller_rabin_test(small_ptr_entries, 25)) break;
     }
-#endif
+
     size_t max_entries = 0;
     if (big_ptr_entries > small_ptr_entries) {
         ptr_size_in_bits = big_ptr_size_in_bits;
@@ -53,14 +50,6 @@ PointerTable::PointerTable(size_t ptr_table_size_limit_in_bytes)
         ptr_size_in_bits = small_ptr_size_in_bits;
         max_entries = small_ptr_entries;
     }
-#ifndef PRIME
-    // On the off chance that max_entries is exactly 2^ptr_size_in_bits, we
-    // need to reduce the table size so that the arbitrarily defined invalid
-    // pointer (all bools set to true) does not point to an actual entry.
-    // If max_entry is a prime, we do not need to worry about this edge case.
-    if (max_entries == pow(2, ptr_size_in_bits))
-        --max_entries;
-#endif
     
     bit_vector.resize(ptr_size_in_bits * max_entries, true);
 
