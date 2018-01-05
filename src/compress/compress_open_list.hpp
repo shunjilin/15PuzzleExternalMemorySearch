@@ -66,6 +66,7 @@ namespace compress {
         assert(size > 0);
         Entry min_entry;
 
+        //TODO: Forloop unecessary? Always returns on first iteration.
         // tiebreak by lowest f value
         for (auto f_bucket = fg_buckets.begin();
              f_bucket != fg_buckets.end(); ++f_bucket) {
