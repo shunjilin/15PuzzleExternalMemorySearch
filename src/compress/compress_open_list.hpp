@@ -39,6 +39,8 @@ namespace compress {
         void push(const Entry &entry);
         void clear();
         bool isempty() const;
+        int get_current_h_value() const;
+        
     };
 
     
@@ -134,6 +136,14 @@ namespace compress {
         
         if (!fg_buckets[f][g].is_open())
             throw IOException("Fail to open open list fstream.");
+    }
+
+    template<class Entry>
+    int CompressOpenList<Entry>::
+    get_current_h_value() const {
+        auto f_bucket = fg_buckets.begin();
+        auto g_bucket = f_bucket->second().rbegin();
+        return f_bucket->first - g_bucket->first;
     }
 
 }
