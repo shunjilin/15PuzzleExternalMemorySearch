@@ -9,6 +9,7 @@
 #include "../utils/memory.hpp"
 #include "../utils/named_fstream.hpp"
 #include "../utils/errors.hpp"
+#include "../utils/compunits.hpp"
 
 #include <utility>
 #include <map>
@@ -29,7 +30,7 @@
 #include <unistd.h>
 using namespace std;
 
-const size_t MERGE_CHUNK_BYTES = 996147200; // 950MB
+const size_t MERGE_CHUNK_BYTES = 950_MiB; // perhaps move this out
 
 // This only works on unit cost domains! Otherwise behavior is undefined.
 
