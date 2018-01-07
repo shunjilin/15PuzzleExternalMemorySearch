@@ -9,14 +9,17 @@
 #include "compress/compress_open_list.hpp"
 #include "compress/compress_closed_list.hpp"
 #include "utils/compunits.hpp"
-#include "utils/scoped_thread.hpp"
+//#include "utils/scoped_thread.hpp"
 
 #include <set>
+#include <future>
+#include <algorithm>
 
 using namespace compunits;
 using namespace compress;
 
-constexpr int N_THREADS = 5;
+constexpr std::size_t N_THREADS = 20;
+using FoundReopened = std::pair<bool, bool>;
 
 namespace astar_pidd {
 
@@ -27,21 +30,27 @@ namespace astar_pidd {
     
         std::vector<typename Domain::State> path;
 
-        std::set<Node<Domain> > collect_unique_nodes(int n_nodes) {
-            int current_h = open.get_curent_h_value();
-            std::set<Node<Domain> > nodes;
+        std::vector<Node<Domain> > collect_unique_nodes(std::size_t n_nodes) {
+            // inefficient, could use a set here
+            std::vector<Node<Domain> > nodes;
             while (!open.isempty() &&
-                   open.get_current_h_value() == current_h &&
                    nodes.size() < n_nodes) {
                 Node<Domain> node = open.pop();
-                nodes.insert(node); // only inserts unique nodes 
+                if (std::find(nodes.begin(), nodes.end(), node) == nodes.end())
+                    nodes.push_back(node); // only inserts unique nodes 
             }
             return nodes;
         }
 
-        void detect_remove_duplicates(std::set<Node<Domain> > &nodes) {
-            
-            // TODO: complete implementation
+        std::vector<std::future<FoundReopened> >
+        batch_duplicate_detection(std::vector<Node<Domain> > &nodes) {
+         
+            std::vector<std::future<FoundReopened> > futures;
+            for (auto &node : nodes) {
+                futures.push_back(std::async(&CompressClosedList<Node<Domain> >::find_insert,
+                                             &this->closed, node));
+            }
+            return futures;
         }
 
     public:
@@ -57,43 +66,47 @@ namespace astar_pidd {
 
                 auto nodes = collect_unique_nodes(N_THREADS);
 
-                detect_remove_duplicates(nodes);
+                auto duplicate_detection_futures =
+                    batch_duplicate_detection(nodes);
 
-                // TODO: vector that stores return values for all threads?
+                for (std::size_t i = 0; i < duplicate_detection_futures.size();
+                     ++i) {
+                    bool found, reopened;
+                    tie(found, reopened) = duplicate_detection_futures[i].get();
+                    if (found && reopened) this->reopd++;
+                    if (found && !reopened) continue;
 
-                bool found, reopened;
-                tie(found, reopened) = closed.find_insert(n);
-                if (found && reopened) this->reopd++;
-                if (found && !reopened) continue;
+                    auto &n = nodes[i];
+                    
+                    typename Domain::State state;
+                    this->dom.unpack(state, n.packed);
 
-                typename Domain::State state;
-                this->dom.unpack(state, n.packed);
-
-                if (this->dom.isgoal(state)) {
-                    // trace path here
-                    path.push_back(state);
-                    while(n.packed != n.parent_packed) {
-                        Node<Domain> parent = closed.trace_parent(n);
-                        typename Domain::State parent_state;
-                        this->dom.unpack(parent_state, parent.packed);
-                        path.push_back(parent_state);
-                        n = parent;
+                    if (this->dom.isgoal(state)) {
+                        // trace path here
+                        path.push_back(state);
+                        while(n.packed != n.parent_packed) {
+                            Node<Domain> parent = closed.trace_parent(n);
+                            typename Domain::State parent_state;
+                            this->dom.unpack(parent_state, parent.packed);
+                            path.push_back(parent_state);
+                            n = parent;
+                        }
+                        closed.print_statistics();
+                        open.clear();
+                        closed.clear();
+                        return path;
                     }
-                    closed.print_statistics();
-                    open.clear();
-                    closed.clear();
-                    break;
-                }
 
-                this->expd++;
-                for (int i = 0; i < this->dom.nops(state); i++) {
-                    int op = this->dom.nthop(state, i);
-                    if (op == n.pop)
-                        continue;
-                    this->gend++;
-                    Edge<Domain> e = this->dom.apply(state, op);
-                    open.push(wrap(state, &n, e.cost, e.pop));
-                    this->dom.undo(state, e);
+                    this->expd++;
+                    for (int i = 0; i < this->dom.nops(state); i++) {
+                        int op = this->dom.nthop(state, i);
+                        if (op == n.pop)
+                            continue;
+                        this->gend++;
+                        Edge<Domain> e = this->dom.apply(state, op);
+                        open.push(wrap(state, &n, e.cost, e.pop));
+                        this->dom.undo(state, e);
+                    }
                 }
             }
             return path;

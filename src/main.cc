@@ -8,12 +8,14 @@
 #include "compress_astar.hpp"
 #include "external_astar.hpp"
 #include "astar_ddd.hpp"
+#include "astar_pidd.hpp"
 #include "utils/wall_timer.hpp"
 #include <cstring>
 
 using namespace astar_ddd;
 using namespace external_astar;
 using namespace compress;
+using namespace astar_pidd;
 
 using namespace std;
 
@@ -35,6 +37,9 @@ int main(int argc, const char *argv[]) {
                         search = new ExternalAstar<Tiles>(tiles);
                 else if (strcmp(argv[1], "astar_ddd") == 0)
                         search = new AstarDDD<Tiles>(tiles);
+                else if (strcmp(argv[1], "astar_pidd") == 0)
+                        search = new AStarPIDD<Tiles>(tiles);
+
 		else
 			throw Fatal("Unknown algorithm: %s", argv[1]);
 

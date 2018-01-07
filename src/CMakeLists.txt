@@ -20,4 +20,5 @@ target_link_libraries(solver
   PRIVATE pointer_table
   PRIVATE tiles
   PRIVATE fatal
-  PRIVATE utils)
+  PRIVATE utils
+  pthread)
