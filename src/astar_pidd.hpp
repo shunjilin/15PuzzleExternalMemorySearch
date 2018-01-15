@@ -2,6 +2,11 @@
 // Modified, Copyright 2017 Shunji Lin. All rights reserved.
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
+
+/*******************//**
+ * WORK IN PROGRESS
+ ***********************/
+
 #include "search.hpp"
 #include "utils.hpp"
 #include "node.hpp"
@@ -18,7 +23,7 @@
 using namespace compunits;
 using namespace compress;
 
-constexpr std::size_t N_THREADS = 20;
+constexpr std::size_t N_THREADS = 4;
 using FoundReopened = std::pair<bool, bool>;
 
 namespace astar_pidd {
@@ -30,14 +35,20 @@ namespace astar_pidd {
     
         std::vector<typename Domain::State> path;
 
+        std::size_t duplicates = 0;
+
         std::vector<Node<Domain> > collect_unique_nodes(std::size_t n_nodes) {
             // inefficient, could use a set here
             std::vector<Node<Domain> > nodes;
             while (!open.isempty() &&
                    nodes.size() < n_nodes) {
                 Node<Domain> node = open.pop();
-                if (std::find(nodes.begin(), nodes.end(), node) == nodes.end())
-                    nodes.push_back(node); // only inserts unique nodes 
+                if (std::find(nodes.begin(), nodes.end(), node) == nodes.end()) {
+                    nodes.push_back(node); // only inserts unique nodes
+                } else {
+                    ++duplicates;
+                }
+                    
             }
             return nodes;
         }
@@ -46,9 +57,11 @@ namespace astar_pidd {
         batch_duplicate_detection(std::vector<Node<Domain> > &nodes) {
          
             std::vector<std::future<FoundReopened> > futures;
-            for (auto &node : nodes) {
-                futures.push_back(std::async(&CompressClosedList<Node<Domain> >::find_insert,
-                                             &this->closed, node));
+            for (auto& node : nodes) {
+                futures.push_back
+                    (std::async(std::launch::async,
+                                &CompressClosedList<Node<Domain> >::find_in_closed,
+                                &this->closed, node));
             }
             return futures;
         }
@@ -63,20 +76,45 @@ namespace astar_pidd {
             open.push(wrap(init, nullptr, 0, -1));
 
             while (!open.isempty() && path.size() == 0) {
+                // temporary placeholder for intermediate reopenings
+                std::vector<Node<Domain> > reopened_nodes;
 
                 auto nodes = collect_unique_nodes(N_THREADS);
 
-                auto duplicate_detection_futures =
-                    batch_duplicate_detection(nodes);
-
-                for (std::size_t i = 0; i < duplicate_detection_futures.size();
-                     ++i) {
+                // check for duplicates in buffer
+                for (auto &node : nodes) {
                     bool found, reopened;
-                    tie(found, reopened) = duplicate_detection_futures[i].get();
-                    if (found && reopened) this->reopd++;
-                    if (found && !reopened) continue;
+                    tie(found, reopened) = closed.find_in_buffers(node);
+                    if (found && reopened) {
+                        this->reopd++;
+                        reopened_nodes.push_back(node);
+                        node.g = -1; // remove node TODO: fix hack
+                    }
+                    if (found && !reopened) {
+                        node.g = -1; // remove node
+                    }
+                }
+                
+                
+                nodes.erase(std::remove_if(nodes.begin(), nodes.end(),
+                               [](Node<Domain>& node) {
+                                               return node.g == -1;
+                                           }), nodes.end());
 
-                    auto &n = nodes[i];
+                 auto duplicate_detection_futures =
+                     batch_duplicate_detection(nodes);
+
+               
+                nodes.insert(nodes.end(), reopened_nodes.begin(), reopened_nodes.end());
+                
+                for (std::size_t i = 0; i < nodes.size(); ++i) {
+                    if (i < duplicate_detection_futures.size()) {
+                        bool found, reopened;
+                        tie(found, reopened) = duplicate_detection_futures[i].get();
+                        if (found && reopened) this->reopd++;
+                        if (found && !reopened) continue;
+                    }
+                    auto n = nodes[i];
                     
                     typename Domain::State state;
                     this->dom.unpack(state, n.packed);
@@ -94,6 +132,7 @@ namespace astar_pidd {
                         closed.print_statistics();
                         open.clear();
                         closed.clear();
+                        std::cout << "duplicates " << duplicates << std::endl;
                         return path;
                     }
 
@@ -107,6 +146,9 @@ namespace astar_pidd {
                         open.push(wrap(state, &n, e.cost, e.pop));
                         this->dom.undo(state, e);
                     }
+                }
+                for (std::size_t i = 0; i < duplicate_detection_futures.size(); ++i) {
+                    closed.insert_in_buffer(nodes[i]);
                 }
             }
             return path;
