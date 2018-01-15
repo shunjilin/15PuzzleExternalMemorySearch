@@ -16,6 +16,7 @@
 #include <memory>
 #include <unordered_set>
 #include <cmath> // for pow
+#include <atomic>
 
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -63,8 +64,8 @@ namespace compress {
 
         // probe statistics, does not include probes for path reconstruction
         mutable size_t buffer_hits = 0;
-        mutable size_t good_probes = 0;
-        mutable size_t bad_probes = 0;
+        mutable std::atomic<size_t> good_probes{0};
+        mutable std::atomic<size_t> bad_probes{0};
 
         size_t get_probe_value(size_t hash_value) const;
         
@@ -75,6 +76,10 @@ namespace compress {
                                     size_t internal_closed_bytes);
         
         ~CompressClosedList() = default;
+
+        pair<found, reopened> find_in_buffers(const Entry &entry);
+        pair<found, reopened> find_in_closed(const Entry &entry);
+        void insert_in_buffer(const Entry &entry);
 
         pair<found, reopened> find_insert(const Entry &entry);
 
@@ -153,11 +158,8 @@ namespace compress {
 
     template<class Entry>
     pair<found, reopened> CompressClosedList<Entry>::
-    find_insert(const Entry &entry) {
-        
-        // First look in buffer
-        auto partition_value =
-            enable_partitioning ? get_partition_value(entry) : 0;
+    find_in_buffers(const Entry &entry) {
+        auto partition_value = get_partition_value(entry);
         
         auto& buffer = buffers[partition_value];
         
@@ -173,8 +175,14 @@ namespace compress {
             }
             return make_pair(true, false);
         }
-        
-        // Then look in hash tables
+        return make_pair(false, false);
+    }
+
+    // TODO: ensure this is thread safe
+    template<class Entry>
+    pair<found, reopened> CompressClosedList<Entry>::
+    find_in_closed(const Entry &entry) {
+        auto partition_value = get_partition_value(entry);    
         auto hash_value = hasher(entry);
         auto probe_value = get_probe_value(hash_value);
         auto ptr = internal_closed.get_ptr_with_hash(hash_value, probe_value);
@@ -202,15 +210,42 @@ namespace compress {
             // match or if false positive probe
             ptr = internal_closed.get_ptr_with_hash(hash_value, probe_value, false);
         }
+        return make_pair(false, false);
+    }
+
+    template<class Entry>
+    void CompressClosedList<Entry>::
+    insert_in_buffer(const Entry &entry) {
+        auto partition_value = get_partition_value(entry);
         buffers[partition_value].insert(entry);
         if (buffers[partition_value].size() == max_buffer_entries)
             flush_buffer(partition_value);
+    }
 
+    template<class Entry>
+    pair<found, reopened> CompressClosedList<Entry>::
+    find_insert(const Entry &entry) {
+        
+        // First look in buffer
+        auto found_reopened_in_buffers = find_in_buffers(entry);
+
+        if (found_reopened_in_buffers.first)
+            return found_reopened_in_buffers;
+        
+        // Then look in hash tables
+        auto found_reopened_in_closed = find_in_closed(entry);
+
+        if (found_reopened_in_closed.first)
+            return found_reopened_in_closed;
+        
+        insert_in_buffer(entry);
+        
         return make_pair(false, false);
     }
 
     template<class Entry>
     unsigned CompressClosedList<Entry>::get_partition_value(const Entry& entry) const {
+        if (!enable_partitioning) return 0;
         return partition_hasher(entry) % n_partitions;
     }
 
@@ -296,9 +331,9 @@ namespace compress {
         cout << "#pair  \"load factor\"   "
              << "\"" << internal_closed.get_load_factor() << "\"" << endl; 
         dfpair(stdout, "successful probes",
-               "%lu", good_probes);
+               "%lu", good_probes.load());
         dfpair(stdout, "usuccessful probes",
-               "%lu", bad_probes);
+               "%lu", bad_probes.load());
         dfpair(stdout, "buffer hits",
                "%lu", buffer_hits);
         if (enable_partitioning) {
