@@ -19,11 +19,12 @@
 #include <set>
 #include <future>
 #include <algorithm>
+#include <thread>
 
 using namespace compunits;
 using namespace compress;
 
-constexpr std::size_t N_THREADS = 4;
+const std::size_t N_THREADS = std::thread::hardware_concurrency();
 using FoundReopened = std::pair<bool, bool>;
 
 namespace astar_pidd {
@@ -69,7 +70,9 @@ namespace astar_pidd {
     public:
         AStarPIDD(Domain &d) : SearchAlg<Domain>(d),
             closed(true, true, true, 950_MiB), // TODO: move to user option
-            open() { }
+            open() {
+            std::cout << N_THREADS << " concurrent threads are supported.\n";
+        }
 
         std::vector<typename Domain::State>
         search(typename Domain::State &init) {
