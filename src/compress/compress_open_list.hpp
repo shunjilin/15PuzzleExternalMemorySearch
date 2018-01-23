@@ -33,8 +33,7 @@ namespace compress {
 
     public:
         CompressOpenList();
-        ~CompressOpenList();
-
+        
         Entry pop();
         void push(const Entry &entry);
         void clear();
