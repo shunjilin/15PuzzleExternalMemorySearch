@@ -24,7 +24,7 @@
 using namespace compunits;
 using namespace compress;
 
-const std::size_t N_THREADS = std::thread::hardware_concurrency();
+const std::size_t N_THREADS = std::thread::hardware_concurrency() - 1;
 using FoundReopened = std::pair<bool, bool>;
 
 namespace astar_pidd {
