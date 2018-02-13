@@ -64,8 +64,8 @@ namespace compress {
 
         // probe statistics, does not include probes for path reconstruction
         mutable size_t buffer_hits = 0;
-        mutable std::atomic<size_t> good_probes{0};
-        mutable std::atomic<size_t> bad_probes{0};
+        mutable size_t good_probes = 0;
+        mutable size_t bad_probes = 0;
 
         size_t get_probe_value(size_t hash_value) const;
         
@@ -331,9 +331,9 @@ namespace compress {
         cout << "#pair  \"load factor\"   "
              << "\"" << internal_closed.get_load_factor() << "\"" << endl; 
         dfpair(stdout, "successful probes",
-               "%lu", good_probes.load());
+               "%lu", good_probes);
         dfpair(stdout, "usuccessful probes",
-               "%lu", bad_probes.load());
+               "%lu", bad_probes);
         dfpair(stdout, "buffer hits",
                "%lu", buffer_hits);
         if (enable_partitioning) {
